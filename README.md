@@ -1,4 +1,4 @@
-# Stitch: a truely _micro_ anti-framework that wraps FastRoute, Plates, and Medoo
+# Stitch: a truely _micro_ framework that wraps FastRoute, Plates, and Medoo
 I wrote this to make the process of building up a website in PHP easier. I tried many frameworks and micro-frameworks but they all seemed too much.
 
 I chose FastRoute as it is small and _fast_. Plates as it is easy to use and does the job pretty well. And Medoo, because writing SQL queries was never my thing.
