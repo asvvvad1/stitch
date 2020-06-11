@@ -1,0 +1,20 @@
+{
+    "name": "asvvvad/stitch",
+    "description": "A micro anti-framework that wraps FastRoute, Plates, and Medoo.",
+    "type": "library",
+    "require": {
+        "php": ">=7.0.0",
+        "league/plates": "v4.0.0-alpha",
+        "vlucas/phpdotenv": "^4.1",
+        "catfan/medoo": "^1.7",
+        "nikic/fast-route": "^1.3"
+    },
+    "license": "MIT",
+    "authors": [{
+        "name": "asvvvad",
+        "email": "asvvvad+dev@disroot.org"
+    }],
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
+}
