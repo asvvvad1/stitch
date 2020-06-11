@@ -15,7 +15,6 @@ Except for fast route I used these a lot and they're easy to use and to learn.
 - Disabling database is as easy as not setting a `DB_DATABASE_TYPE`.
 - `GET` requests support `HEAD` calls and don't output the body automatically. 
 - Support for `JSON` data in `POST` requests.
-- A template site with all dependencies and a couple templates and CSS is about 500kb
 
 ## Preview:
 
