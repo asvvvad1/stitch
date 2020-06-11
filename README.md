@@ -51,8 +51,11 @@ While Stitch require no specific structure to allow its use on shared hosting pl
 It can be used as reference and documentation for Stitch.
 
 To do that:
+
 `git clone https://github.com/asvvvad/stitch-template-mono-color/`
+
 `cd stitch-template-mono-color/data`
+
 `composer update` 
 
 See the template's [README](https://github.com/asvvvad/stitch-template-mono-color/blob/master/README.md) for more information.
