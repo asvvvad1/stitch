@@ -9,11 +9,12 @@ Except for fast route I used these a lot and they're easy to use and to learn.
 
 - Almost no learning curve! Stitch syntax is very minimal as it uses components like FastRoute, Plates and Medoo which are familiar to many and have great documentation and support.
 - Wraps powerful, tested, and easy libraries providing all that's needed without bloat while letting you extend however you like
-- No forced directory structure! You can set up all the location in an easy to use and read .env file
-- Medoo Database config is set in the .env for easy configuration. For example DB_DATABASE_TYPE is Medoo's database_type option. Changing the database type or credentials is as simple as easy editing the .env file, and no could should need to be changed!
-- Disabling database is as easy as not setting a DB_DATABASE_TYPE! 
-- GET requests support HEAD calls and don't output the body automatically. 
-- Support for JSON data in POST requests
+- No forced directory structure! You can set up all the location in an easy to use and read .env file.
+- Sending a response is easy! send **HTML**, **JSON**, **redirects**, any other content using **`content-type`** header, in a single line!
+- Medoo Database config is set in the .env for easy configuration. For example `DB_DATABASE_TYPE` is Medoo's `database_type` option. Changing the database type or credentials is as simple as easy editing the `.env` file, and no could should need to be changed!
+- Disabling database is as easy as not setting a `DB_DATABASE_TYPE`.
+- `GET` requests support `HEAD` calls and don't output the body automatically. 
+- Support for `JSON` data in `POST` requests.
 - A template site with all dependencies and a couple templates and CSS is about 500kb
 
 ## Preview:
@@ -36,6 +37,16 @@ $stitch->get('/', function() {
     return ['body' => ['json' => 'response']];
 });
 
+$stitch->addRoute('GET', '/image', function () : array {
+    return ['body' => file_get_contents('/path/to/image.png'), 'headers' => ['content-type' => 'image/png']];
+});
+
+// When you return a string it is printed out as HTML.
+$stitch->get('/bye', function() : string {
+	return '<b>Bye</b>, World.';
+});
+
+// Any callable is supported
 $stitch->post('/post', 'Controller::post');
 
 $stitch->
@@ -48,21 +59,21 @@ $stitch->run();
 ## Getting started:
 
 While Stitch require no specific structure to allow its use on shared hosting platforms, etc. It's recommended to use the template and make changes depending on your needs.
-It can be used as reference and documentation for Stitch.
+It can be used as reference and documentation for Stitch. For now get the `.env` from there.
 
 To do that:
 
-`git clone https://github.com/asvvvad/stitch-template-mono-color/`
+`git clone https://github.com/asvvvad/stitch-template/`
 
 `cd stitch-template-mono-color/data`
 
 `composer update` 
 
-See the template's [README](https://github.com/asvvvad/stitch-template-mono-color/blob/master/README.md) for more information.
+See the template's [README](https://github.com/asvvvad/stitch-template/blob/master/README.md) for more information.
 
 ### URL rewrite:
 
-#### NgniX:
+#### ngnix:
 ```
 location / {
     if (!-e $request_filename){

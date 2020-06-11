@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
 
+// include the Composer autoloader
+require 'vendor/autoload.php';
+
 // New Stitch instance.
 // The only parameter to be passed is the data directory
 // Directory structure is configurable using the .env file

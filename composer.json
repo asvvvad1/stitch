@@ -1,6 +1,6 @@
 {
     "name": "asvvvad/stitch",
-    "description": "A micro anti-framework that wraps FastRoute, Plates, and Medoo.",
+    "description": "A micro framework that wraps FastRoute, Plates, and Medoo.",
     "type": "library",
     "require": {
         "league/plates": "v4.0.0-alpha",
