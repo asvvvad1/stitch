@@ -21,34 +21,39 @@ Except for fast route I used these a lot and they're easy to use and to learn.
 ```php
 $stitch = new Stitch('data_directory');
 
-// You can access both plates & database (Medoo)
+
+// Views
+
+// You can access both $plates & $database (Medoo)
 // Add data to all templates
 $stitch->plates->addData([
 	'title' => 'Stitch'
 ]);
 
-// You can use get(), post(), put(), head(), patch(), delete() too.
 $stitch->addRoute('GET', '/hello', function(array $vars, Medoo\Medoo $db) : array {
 	return ['view' => 'hello'];
-});
+})
 
+// JSON
 $stitch->get('/', function() {
     return ['body' => ['json' => 'response']];
 });
 
-$stitch->addRoute('GET', '/image', function () : array {
-    return ['body' => file_get_contents('/path/to/image.png'), 'headers' => ['content-type' => 'image/png']];
+// When you pass a string as handler it'll be printed out as HTMl
+$stitch->get('/handle', 'This route has been <em>handled</em>');
+
+// HTTP redirect
+$stitch->get('/old', function () : array {
+	return ['redirect' => '/new', 'status_code' => 301];
 });
 
-// When you return a string it is printed out as HTML.
-$stitch->get('/bye', function() : string {
-	return '<b>Bye</b>, World.';
+// Output any type of content using headers
+$stitch->get('/image', function () : array {
+    return ['body' => file_get_contents('/path/to/image.png'), 'headers' => ['content-type' => 'image/png']];
 });
 
 // Any callable is supported
 $stitch->post('/post', 'Controller::post');
-
-$stitch->
 
 $stitch->run();
 ```
@@ -64,9 +69,9 @@ To do that:
 
 `git clone https://github.com/asvvvad/stitch-template/`
 
-`cd stitch-template-mono-color/data`
+`cd stitch-template/data/`
 
-`composer update` 
+`composer update`
 
 See the template's [README](https://github.com/asvvvad/stitch-template/blob/master/README.md) for more information.
 
