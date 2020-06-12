@@ -94,6 +94,9 @@ $stitch->get('/bye', function() : string {
 	return '<b>Bye</b>, World.';
 });
 
+// An even simpler approach is to pass the HTML string as handle:
+$stitch->get('/handle', 'This route has been <em>handled</em>');
+
 /* OTHER/POST requests */
 
 // You can use all methods supported by FastRoute
