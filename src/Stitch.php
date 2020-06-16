@@ -3,7 +3,6 @@
 use Medoo\Medoo;
 use Dotenv\Dotenv;
 use League\Plates\Engine;
-use FastRoute;
 
 /**
  * Stitch: A micro framework that wraps FastRoute, Plates, and Medoo.
@@ -12,16 +11,18 @@ class Stitch
 {
 
 	/** @var Medoo\Medoo $database Medoo Database instance */
-	public $database;
+	static public $database;
 	/** @var Dotenv\Dotenv $env Dotenv instance */
-	public $dotenv;
-	/** @var League\Plates\Engine $plates Plates templates */
-	public $plates;
+	static public $dotenv;
+	/** @var League\Plates\Engine $templates Plates templates */
+	static public $templates;
 
 	/** @var array $routesArray FastRoute routes as array before processing */
-	protected $routesArray = array();
+	static protected $routesArray = array();
 	/** @var callable $routes FastRoute routes function */
 	protected $routes;
+
+	static protected $errorHandler;
 
 	/**
 	 * Create a new Stitch instance
@@ -33,8 +34,8 @@ class Stitch
 		$_ENV['DATA'] = $dataDir;
 
 		// Load the env variables
-		$this->dotenv = Dotenv::createImmutable($dataDir);
-		$this->dotenv->load();        
+		static::$dotenv = Dotenv::createImmutable($dataDir);
+		static::$dotenv->load();        
 
 		// Initialize database if set
 		if (isset($_ENV['DB_DATABASE_TYPE'])) {
@@ -44,11 +45,35 @@ class Stitch
 				$name = strtolower(explode('DB_', $name, 2)[1]);
 				$config[$name] = $value;
 			}
-			$this->database = new Medoo($config);
+			static::$database = new Medoo($config);
 		}
 		
-		// Create new Plates instance
-		$this->plates = Engine::create($_ENV['TEMPLATES']);
+		// Create new Plates instance if set
+		if (isset($_ENV['TEMPLATES'])) {
+			static::$templates = Engine::create($_ENV['TEMPLATES']);
+		}
+
+		if (isset($_ENV['CONTROLLERS'])) {
+			spl_autoload_register(function ($class) {
+				include_once $_ENV['CONTROLLERS'] . $class . '.php';
+			});
+		}
+
+		if (isset($_ENV['ROUTES'])) {
+			foreach (glob($_ENV['ROUTES'] . '*.php') as $file) {
+				include_once $file;
+			}
+		}
+	}
+
+	/**
+	 * Set the handler for the 404 and 405 errors
+	 *
+	 * @param $handler Can be a function or a string
+	 **/
+	static public function setErrorHandler($handler)
+	{
+		static::$errorHandler = $handler;
 	}
 
 	/**
@@ -61,7 +86,7 @@ class Stitch
 	protected function addRoutes()
 	{
 		$this->routes = function (FastRoute\RouteCollector $r) {
-			foreach ($this->routesArray as $data) {
+			foreach (static::$routesArray as $data) {
 				$r->addRoute($data['method'], $data['route'], $data['handler']);
 			}
 		};
@@ -74,9 +99,9 @@ class Stitch
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function addRoute(string $method, string $route, $handler)
+	static public function addRoute(string $method, string $route, $handler)
 	{
-		$this->routesArray[] = ['method' => $method, 'route' => $route, 'handler' => $handler];
+		static::$routesArray[] = ['method' => $method, 'route' => $route, 'handler' => $handler];
 	}
 
 	/**
@@ -85,46 +110,97 @@ class Stitch
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function get(string $route, $handler) { $this->addRoute('GET', $route, $handler); }
+	static public function get(string $route, $handler) { static::addRoute('GET', $route, $handler); }
 	/**
 	 * POST request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function post(string $route, $handler) { $this->addRoute('POST', $route, $handler); }
+	static public function post(string $route, $handler) { static::addRoute('POST', $route, $handler); }
 	/**
 	 * PUT request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function put(string $route, $handler) { $this->addRoute('PUT', $route, $handler); }
+	static public function put(string $route, $handler) { static::addRoute('PUT', $route, $handler); }
 	/**
 	 * DELETE request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function delete(string $route, $handler) { $this->addRoute('DELETE', $route, $handler); }
+	static public function delete(string $route, $handler) { static::addRoute('DELETE', $route, $handler); }
 	/**
 	 * HEAD request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function head(string $route, $handler) { $this->addRoute('HEAD', $route, $handler); }
+	static public function head(string $route, $handler) { static::addRoute('HEAD', $route, $handler); }
 	/**
 	 * PATCH request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	public function patch(string $route, $handler) { $this->addRoute('PATCH', $route, $handler); }
+	static public function patch(string $route, $handler) { static::addRoute('PATCH', $route, $handler); }
 
 
 	/**
+	 * Proccess a handler
+	 *
+	 * @param mixed $handler Description
+	 * @throws Exception Handler must return an array or be a string.
+	 **/
+	public function handle($handler, array $vars, string $httpMethod)
+	{
+		if (is_callable($handler)) {
+			$result = call_user_func($handler, $vars);
+			// If the handler returned a string not array throw an exception
+			if (!array($result)) {
+				throw new Exception('Handler must return an array or be a string.', 1);
+			}
+		} elseif (is_string($handler)) {
+			// If the handler is not a callback but a string, print it out as regular HTML
+			die($handler);
+		}
+
+		if (isset($result['headers'])) {
+			foreach ($result['headers'] as $name => $value) {
+				header("$name: $value");
+			}
+		}
+
+		if (isset($result['redirect'])) {
+			header('Location: ' . $result['redirect']);
+		}
+
+		if (isset($result['status_code'])) {
+			http_response_code($result['status_code']);
+		}
+
+
+		if (isset($result['view'])) {
+			$output = static::$templates->render($_ENV['VIEWS'] . '/' . $result['view'], $result['data'] ?? []);
+		} elseif (isset($result['body'])) {
+			if (is_array($result['body'])) {
+				header('content-type: application/json');
+				$output = json_encode($result['body']);
+			} elseif (is_string($result['body'])) {
+				$output = $result['body'];
+			}
+		}
+
+		if (!empty($output) and $httpMethod != 'HEAD') {
+			echo $output;
+		}
+	}
+
+	/**
 	 * This will run the dispatcher with the added routes using addRoutes()
+	 * @throws Exception Handler must return an array or be a string.
 	 **/
 	public function run()
 	{
@@ -143,29 +219,20 @@ class Stitch
 		if (false !== $pos = strpos($uri, '?')) {
 			$uri = substr($uri, 0, $pos);
 		}
-		$uri = rawurldecode($uri);
 
+		$uri = rawurldecode($uri);
 		$routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 		switch ($routeInfo[0]) {
 			case FastRoute\Dispatcher::NOT_FOUND:
 				// ... 404 Not Found
 				http_response_code(404);
-
-				echo $this->plates->render($_ENV['VIEWS'] . '/error', [
-					'code' => '404',
-					'error' => 'Not Found',
-					'description' => 'This page doesn\'t exist.',
-				]);
+				$this->handle(static::$errorHandler, ['code' => 404, 'full' => 'Not Found'], $httpMethod);
 				break;
 			case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
 				$allowedMethods = $routeInfo[1];
 				// ... 405 Method Not Allowed
 				http_response_code(405);
-				echo $this->plates->render($_ENV['VIEWS'] . '/error', [
-					'code' => '405',
-					'error' => 'Method Not Allowed',
-					'description' => 'This HTTP method is not allowed.',
-				]);
+				$this->handle(static::$errorHandler, ['code' => 405, 'full' => 'Method Not Allowed'], $httpMethod);
 				break;
 			case FastRoute\Dispatcher::FOUND:
 				$handler = $routeInfo[1];
@@ -180,40 +247,7 @@ class Stitch
 				}
 
 				// Proccess the handler
-				if (is_callable($handler))
-					$result = call_user_func($handler, $vars, $this->database);
-				elseif (is_string($handler)) {
-					// If the handler is not a callback but a string, print it out as regular HTML
-					die($handler);
-				}
-
-				if (isset($result['headers'])) {
-					foreach ($result['headers'] as $name => $value) {
-						header("$name: $value");
-					}
-				}
-
-				if (isset($result['redirect'])) {
-					header('Location: ' . $result['redirect']);
-				}
-
-				if (isset($result['status_code'])) {
-					http_response_code($result['status_code']);
-				}
-
-				if (isset($result['view'])) {
-					$output = $this->plates->render($_ENV['VIEWS'] . '/' . $result['view'], $result['data'] ?? []);
-				} elseif (isset($result['body'])) {
-					if (is_array($result['body'])) {
-						header('content-type: application/json');
-						$output = json_encode($result['body']);
-					} else
-						$output = $result['body'];
-				}
-
-				if ($output != null and $httpMethod != 'HEAD') {
-					echo $output;
-				}
+				$this->handle($handler, $vars, $httpMethod);
 
 				break;
 		}
