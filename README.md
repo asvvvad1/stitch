@@ -9,7 +9,7 @@ It was made to:
 - Enjoy routing and templating without the hasstle of having to use a big framework nor stitching up libraries to make things work.
 
 ## Getting started:
-You can get started by seeing the [documentation]() and downloading one of the two [templates](#templates).
+You can get started by seeing the [documentation](http://stitch.asvvvad.eu.org/) and downloading one of the two [templates](http://stitch.asvvvad.eu.org/#templates).
 
 ## Contributions:
 If you have any suggestions or improvements I'm looking forward to hear them! Open up an issue or a pull request here ^^
