@@ -205,11 +205,14 @@ class Stitch
 	public function run()
 	{
 		$this->addRoutes();
-
-		$dispatcher = FastRoute\simpleDispatcher($this->routes, [
-			'cacheFile' => $_ENV['CACHE_FILE'], /* required */
-			'cacheDisabled' =>  $_ENV['CACHE_DISABLED']
-		]);
+		if (isset($_ENV['CACHE_FILE'])) {
+			$dispatcher = FastRoute\cachedDispatcher($this->routes, [
+				'cacheFile' => $_ENV['CACHE_FILE'], /* required */
+				'cacheDisabled' =>  $_ENV['CACHE_DISABLED']
+			]);
+		} else {
+			$dispatcher = FastRoute\simpleDispatcher($this->routes);
+		}
 
 		// Fetch method and URI from somewhere
 		$httpMethod = $_SERVER['REQUEST_METHOD'];
