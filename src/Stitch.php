@@ -2,7 +2,8 @@
 
 use Medoo\Medoo;
 use Dotenv\Dotenv;
-use League\Plates\Engine;
+use League\Plates\Engine as Plates;
+use \Delight\Auth\Auth as Auth;
 
 /**
  * Stitch: A micro framework that wraps FastRoute, Plates, and Medoo.
@@ -11,14 +12,18 @@ class Stitch
 {
 
 	/** @var Medoo\Medoo $database Medoo Database instance */
-	static public $database;
+	static public Medoo $database;
 	/** @var Dotenv\Dotenv $env Dotenv instance */
-	static public $dotenv;
+	static public Dotenv $dotenv;
 	/** @var League\Plates\Engine $templates Plates templates */
-	static public $templates;
+	static public Plates $templates;
+	/** @var \Delight\Auth\Auth $auth Delight's PHP-Auth */
+	static public Auth $auth;
 
+	/** @var array $translations array where the translation files will be loaded into */
+	static protected array $translations;
 	/** @var array $routesArray FastRoute routes as array before processing */
-	static protected $routesArray = array();
+	static protected  array $routesArray = array();
 	/** @var callable $routes FastRoute routes function */
 	protected $routes;
 
@@ -46,19 +51,22 @@ class Stitch
 				$config[$name] = $value;
 			}
 			static::$database = new Medoo($config);
+			if (isset($_ENV['USE_AUTHENTICATION'])) {
+				static::$auth = new Auth(static::$database->pdo);
+			}
 		}
 		
 		// Create new Plates instance if set
 		if (isset($_ENV['TEMPLATES'])) {
-			static::$templates = Engine::create($_ENV['TEMPLATES']);
+			static::$templates = Plates::create($_ENV['TEMPLATES']);
 		}
-
+		// Autoload controllers automatically
 		if (isset($_ENV['CONTROLLERS'])) {
 			spl_autoload_register(function ($class) {
 				include_once $_ENV['CONTROLLERS'] . $class . '.php';
 			});
 		}
-
+		// Automatically include routes' definitions
 		if (isset($_ENV['ROUTES'])) {
 			foreach (glob($_ENV['ROUTES'] . '*.php') as $file) {
 				include_once $file;
