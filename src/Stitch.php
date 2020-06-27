@@ -3,7 +3,6 @@
 use Medoo\Medoo;
 use Dotenv\Dotenv;
 use League\Plates\Engine as Plates;
-use \Delight\Auth\Auth as Auth;
 
 /**
  * Stitch: A micro framework that wraps FastRoute, Plates, and Medoo.
@@ -18,7 +17,7 @@ class Stitch
 	/** @var League\Plates\Engine $templates Plates templates */
 	static public Plates $templates;
 	/** @var \Delight\Auth\Auth $auth Delight's PHP-Auth */
-	static public Auth $auth;
+	static public \Delight\Auth\Auth $auth;
 
 	/** @var array $translations array where the translation files will be loaded into */
 	static protected array $translations;
@@ -52,7 +51,7 @@ class Stitch
 			}
 			static::$database = new Medoo($config);
 			if (isset($_ENV['USE_AUTHENTICATION'])) {
-				static::$auth = new Auth(static::$database->pdo);
+				static::$auth = new \Delight\Auth\Auth(static::$database->pdo);
 			}
 		}
 		

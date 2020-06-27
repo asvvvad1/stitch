@@ -3,6 +3,7 @@
     "description": "A micro framework that wraps FastRoute, Plates, and Medoo.",
     "type": "library",
     "require": {
+		"league/plates": "v4.0.0-alpha",
         "vlucas/phpdotenv": "^4.1",
         "catfan/medoo": "^1.7",
         "nikic/fast-route": "^1.3",
