@@ -40,11 +40,11 @@ class Stitch
 
 		// Load the env variables
 		static::$dotenv = Dotenv::createImmutable($dataDir);
-		static::$dotenv->load();        
+		static::$dotenv->load();
 
 		// Initialize database if set
 		if (isset($_ENV['DB_DATABASE_TYPE'])) {
-			foreach($_ENV as $name => $value) {
+			foreach ($_ENV as $name => $value) {
 				if (strpos($name, 'DB_') !== 0 or empty($value))
 					continue;
 				$name = strtolower(explode('DB_', $name, 2)[1]);
@@ -53,29 +53,30 @@ class Stitch
 			static::$database = new Medoo($config);
 			if (isset($_ENV['USE_AUTHENTICATION'])) {
 				// Setup the database for authentication automatically
-				if (isset($_ENV['VENDOR'])) {
-					switch (strtolower($_ENV['DB_DATABASE_TYPE'])) {
-						case 'mysql':
-						case 'mariadb':
-							$type = 'MySQL';
-						break;
-						case 'postgresql':
-							$type = 'PostgreSQL';
-						break;
-						case 'sqlite':
-						case 'sqlite3':
-							$type = 'SQLite';
-						break;	
-					}
-					if (isset($type)) {
-						static::$database->query(file_get_contents($_ENV['VENDOR'] . "/delight-im/auth/Database/$type.sql"));
+				if (static::$database->has('users', ['id'])) {
+					if (isset($_ENV['VENDOR'])) {
+						switch (strtolower($_ENV['DB_DATABASE_TYPE'])) {
+							case 'mysql':
+							case 'mariadb':
+								$type = 'MySQL';
+								break;
+							case 'postgresql':
+								$type = 'PostgreSQL';
+								break;
+							case 'sqlite':
+							case 'sqlite3':
+								$type = 'SQLite';
+								break;
+						}
+						if (isset($type)) {
+							static::$database->query(file_get_contents($_ENV['VENDOR'] . "/delight-im/auth/Database/$type.sql"));
+						}
 					}
 				}
-
 				static::$auth = new Auth(static::$database->pdo);
 			}
 		}
-		
+
 		// Create new Plates instance if set
 		if (isset($_ENV['TEMPLATES'])) {
 			static::$templates = Plates::create($_ENV['TEMPLATES']);
@@ -138,42 +139,60 @@ class Stitch
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	static public function get(string $route, $handler) { static::addRoute('GET', $route, $handler); }
+	static public function get(string $route, $handler)
+	{
+		static::addRoute('GET', $route, $handler);
+	}
 	/**
 	 * POST request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	static public function post(string $route, $handler) { static::addRoute('POST', $route, $handler); }
+	static public function post(string $route, $handler)
+	{
+		static::addRoute('POST', $route, $handler);
+	}
 	/**
 	 * PUT request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	static public function put(string $route, $handler) { static::addRoute('PUT', $route, $handler); }
+	static public function put(string $route, $handler)
+	{
+		static::addRoute('PUT', $route, $handler);
+	}
 	/**
 	 * DELETE request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	static public function delete(string $route, $handler) { static::addRoute('DELETE', $route, $handler); }
+	static public function delete(string $route, $handler)
+	{
+		static::addRoute('DELETE', $route, $handler);
+	}
 	/**
 	 * HEAD request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	static public function head(string $route, $handler) { static::addRoute('HEAD', $route, $handler); }
+	static public function head(string $route, $handler)
+	{
+		static::addRoute('HEAD', $route, $handler);
+	}
 	/**
 	 * PATCH request method
 	 *
 	 * @param string $route Route's URI
 	 * @param mixed $handler the handler for the route
 	 **/
-	static public function patch(string $route, $handler) { static::addRoute('PATCH', $route, $handler); }
+	static public function patch(string $route, $handler)
+	{
+		static::addRoute('PATCH', $route, $handler);
+	}
 
 
 	/**
